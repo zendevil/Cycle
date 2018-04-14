@@ -265,10 +265,9 @@ int builtin_cmd(char **argv) {
         return 1;
     }
     if(!strcmp(argv[0], "bg")) {
-        if(!strcmp(argv[1], "%")) {
+        if(!strcmp(&argv[1][0], "%")) {
             printf("you hit this right");
             return 1;
-
         }
     }
 
