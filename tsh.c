@@ -24,6 +24,7 @@
 #define BG 2    /* running in background */
 #define ST 3    /* stopped */
 
+
 /* 
  * Jobs states: FG (foreground), BG (background), ST (stopped)
  * Job state transitions and enabling actions:
@@ -164,6 +165,32 @@ int main(int argc, char **argv)
 */
 void eval(char *cmdline) 
 {
+    char *argv[MAXLINE]; // argument list execve()
+    char buf[MAXLINE];
+    int bg;
+    pid_t pid;
+
+    strcpy(buf, cmdline);
+    bg = parseline(buf, argv);
+    if(argv[0] == NULL)
+        return; //ignore empty lines
+
+    if(!builtin_cmd(argv)) {
+        if((pid == fork()) == 0) {
+            if(execve(argv[0], argv, environ) < 0) {
+                printf("%s: Command not found.\n", argv[0]);
+            }
+        }
+
+        // Parent waits for foreground job to terminate
+
+        if(!bg) {
+            int status;
+            if(waitpid(pid, &status, 0) < 0)
+                unix_error("waitfg: waitpid error");
+        } else
+            printf("%d %s", pid, cmdline);
+    }
     return;
 }
 
@@ -262,14 +289,7 @@ void waitfg(pid_t pid)
  */
 void sigchld_handler(int sig) 
 {
-    int olderrno = errno;
-    while(waitpid(-1, NULL, 0) > 0) {
-        Sio_puts("Handler reaped children\n");
-    }
-    if(errno != ECHILD)
-        Sio_error("waitpid error");
-    Sleep(1);
-    errno = olderrno;
+
 }
 
 /* 
