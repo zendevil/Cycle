@@ -260,6 +260,9 @@ int builtin_cmd(char **argv) {
         exit(0);
     if(!strcmp(argv[0], "&"))
         return 1;
+    if(!strcmp(argv[0], "jobs"))
+        listjobs(jobs);
+
     return 0;     /* not a builtin command */
 }
 
